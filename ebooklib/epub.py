@@ -1547,7 +1547,7 @@ class EpubReader(object):
 
             self.book.add_item(ei)
 
-    def _parse_ncx(self, data):
+    def _parse_ncx(self, data, base_path):
         tree = parse_string(data)
         tree_root = tree.getroot()
 
@@ -1561,7 +1561,7 @@ class EpubReader(object):
                 if a.tag == '{%s}navLabel' % NAMESPACES['DAISY']:
                     label = a.getchildren()[0].text
                 if a.tag == '{%s}content' % NAMESPACES['DAISY']:
-                    content = a.get('src', '')
+                    content = zip_path.normpath(zip_path.join(base_path, a.get('src', '')))
                 if a.tag == '{%s}navPoint' % NAMESPACES['DAISY']:
                     children.append(_get_children(a, n + 1, a.get('id', '')))
 
@@ -1650,7 +1650,7 @@ class EpubReader(object):
             except KeyError:
                 raise EpubException(-1, 'Can not find ncx file.')
 
-            self._parse_ncx(ncxFile)
+            self._parse_ncx(ncxFile, zip_path.dirname(self.book.get_item_with_id(toc).get_name()))
 
     def _load_guide(self):
         guide = self.container.find('{%s}%s' % (NAMESPACES['OPF'], 'guide'))
